@@ -1,0 +1,16 @@
+data/
+*.jld2
+*.pvd
+*.vti
+*.vtu
+vtk_data/
+*.mp4
+*.gif
+# LaTeX build products
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.synctex.gz
