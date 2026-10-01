@@ -1,11 +1,14 @@
-using WaterLily,StaticArrays,CUDA,BiotSavartBCs
+# Impulsively started circular cylinder at Re=550 (validation case in the appendix).
+# Output: ImpCircle_results.jld2, used by figure_A1 in figures/figures.jl
+include(joinpath(@__DIR__,"..","src","common.jl"))
+using CUDA,JLD2
+mkpath(datadir); cd(datadir)
+
 function circ(D,m;Re=550,U=1,shift=0,makeSim=BiotSimulation,kwargs...)
     body = AutoBody((x,t)->hypot(x[1]-m÷2,x[2]-m÷2-shift)-D÷2)
     makeSim((2m,m), (U,0), D; body, ν=U*D/Re, kwargs...)
 end
 
-using Plots,TypedTables
-figdir = joinpath(@__DIR__,"..","tex","fig") # paper figures are written here
 function update_Ix!(sim,t₀)
     sim_step!(sim,t₀;remeasure=false)
     ωy = sim.flow.σ
@@ -48,14 +51,6 @@ Gillis = hcat([[0.04311073541842814, 1.3588445839874406],
           [5.206255283178354, 0.9253693998309381],
           [5.598478444632289, 0.9092573360705228]]...)
 
-function small_time(t;Re=550, k=4√(t/Re))
-    t₁ = 2.257 + k - 0.141k^2 + 0.031k^3
-    t₂ = (8.996 - 41k + 143.8k^2 + 45.4k^3)*t^2
-    t₃ = (20.848 - 314.08k - 1851.36k^2 - 194.8k^3)*t^4
-    t₄ = (28.864 + 6.272k)*t^6
-    return π/√(Re*t)*(t₁ + t₂ + t₃ + t₄)
-end
-
 # Generate present method's data
 D,m_2,m_1 = 128,(4,5,6),(5,10,20,40)
 @time biot = map(m_2) do m
@@ -66,35 +61,10 @@ end;
     sim = circ(D,m*D÷2,mem=CUDA.CuArray,makeSim=Simulation)
     [update_Ix!(sim,t₀) for t₀ in 0:0.02:6] |>Table |> with_drag
 end;
-using JLD2
-save_object("ImpCircle_results.jld2",Dict("biot"=>biot,"refl"=>refl,"Gillis"=>Gillis,"koumoutsakos"=>koumoutsakos))
 
-# Plot
-begin
-    scatter(koumoutsakos[1,:],koumoutsakos[2,:],label="Koumoutsakos and Leonard",m=(5, :square, :white, stroke(1, color)))
-    scatter!(Gillis[1,:],Gillis[2,:],label="Gillis et al.",m=(5, :white, stroke(1, color)),c=:black,marker=:circle)
-    plot!(collect(0:0.01:0.35),small_time.(0:0.01:0.35),ls=:dash,c=:black,label="Theoretical curve")
-    bmap = palette(:Blues,5)
-    for (m,dat) in zip(m_2,biot)
-        m2 = m/2
-        mod(m2,1)==0 && (m2 = Int(m2))
-        plot!(dat.t,dat.Cd,c=bmap[m-2],label="Present, D/W=1/$m2")
-    end
-    rmap = palette(:Reds,6)
-    for (i,m,dat) in zip(1:4,m_1,refl)
-        m2 = m/2
-        mod(m2,1)==0 && (m2 = Int(m2))
-        plot!(dat.t,dat.Cd,c=rmap[i+1],ls=:dashdot,label="Reflection, D/W=1/$m2")
-    end
-end; plot!(dpi=300,size=(550,340),ylabel="Drag coefficient",xlabel="convective time",ylims=(0,1.6),legend=:bottomright)
-savefig(joinpath(figdir,"ImpCircle_Cd.png"))
-
-# Flow plot
-D=128
+# Vorticity field on the smallest domain at tU/D=4
 sim = circ(D,2*D);sim_step!(sim,4,remeasure=false);
 ω = sim.flow.σ
 @inside ω[I] = WaterLily.curl(3,I,sim.flow.u)*sim.L/sim.U
-contourf(clamp.(ω[inside(ω)],-6,6)';aspect_ratio=:equal,dpi=300,
-    framestyle=nothing,axis=nothing,size=(355,200),
-    cbar=:top,c=:RdBu,clims=(-6,6),lw=0,levels=(union(-6:-1,1:6)))
-savefig(joinpath(figdir,"ImpCircle_4_vort.png"))
+save_object("ImpCircle_results.jld2",Dict("biot"=>biot,"refl"=>refl,"Gillis"=>Gillis,
+                                          "koumoutsakos"=>koumoutsakos,"ω"=>Array(ω)))

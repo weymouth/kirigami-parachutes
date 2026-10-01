@@ -1,6 +1,15 @@
-using WaterLily,BiotSavartBCs,CUDA,StaticArrays,TypedTables
+# Kirigami parachute moving in the x-y plane (transverse acceleration, angle of attack, rotation
+# and free fall), simulated on a half domain with a symmetry plane in z. Include either this file or quarter_domain.jl in a Julia session,
+# not both: each one overwrites `BiotSavartBCs.symmetry` and defines its own `drag!`.
+include("common.jl")
+using CUDA
+
+WaterLily.CFL(a::Flow) = WaterLily.CFL(a;Δt_max=1) # good idea when accelerating from rest
+linear(t)=min(t,one(t))
 
 # Biot-Savart momentum step with U and acceleration prescribed
+# NOTE: needs `mom_project!(...; U)`, which BiotSavartBCs v1 does not provide. To be replaced
+# by a reactive `uBC` (WaterLily-jl/WaterLily.jl#320) before the free-fall runs can be made.
 import WaterLily: scale_u!,conv_diff!,udf!,BDIM!,CFL,mom_project!
 function biot_mom_step_fall!(sim::AbstractSimulation;udf=nothing,U,kwargs...)
     a=sim.flow; b=sim.pois
@@ -18,16 +27,13 @@ function biot_mom_step_fall!(sim::AbstractSimulation;udf=nothing,U,kwargs...)
     push!(a.Δt,CFL(a))
 end
 
-import WaterLily: @loop
 # falling body acceleration term
 fall!(flow,t;acceleration) = for i ∈ 1:ndims(flow.p)
     @loop flow.f[I,i] += acceleration[i] over I ∈ CartesianIndices(flow.p)
 end
 
-WaterLily.CFL(a::Flow) = WaterLily.CFL(a;Δt_max=1) # good idea when accelerating from rest
-linear(t)=min(t,one(t))
-function kirigami(N;H=0,rings=16,U=1,a=1,Re=1e4,mem=Array,T=Float32,Ux=linear,R=T(2N/3),θ₀=0.f0,
-                  dims=(3N,3N,3N÷2),ϵ=T(1/2),half_thk=ϵ+1/T(√2),fall=false,dir=1)
+function kirigami_half(N;H=0,rings=16,U=1,a=1,Re=1e4,mem=Array,T=Float32,Ux=linear,R=T(2N/3),θ₀=0.f0,
+                          dims=(3N,3N,3N÷2),ϵ=T(1/2),half_thk=ϵ+1/T(√2),fall=false,dir=1)
     δR = R/rings; δH = R*H/rings^2; x₀ = max(R*(1-H)/2,δR+half_thk-min(0,R*H))+0.25R
     H==0.25 && (x₀ += R) # add some extra space for the body to fall into when H is small
     @inline mapped(f) = AutoBody(f,RigidMap(SA[x₀,dims[2]/2.f0,0],SA{T}[0,0,θ₀]))
@@ -49,6 +55,7 @@ import BiotSavartBCs: interaction,symmetry,image
     return interaction(ω,T,args...)+sgn₃*interaction(ω,T₃,args...)
 end
 
+# force and moment coefficient histories (half-domain normalization)
 drag!(sim,times,R=sim.L,x₀=SA[R,0,0];remeasure=false) = map(times) do t
     @show t; flush(stdout)
     sim_step!(sim,t;remeasure)
@@ -63,17 +70,17 @@ end |> Table
 @inline I₆₆(R₀,R₁,t,ρ,x₀) = Izz(R₀,R₁,mass(R₀,R₁,t,ρ)) + mass(R₀,R₁,t,ρ)*x₀^2 # moment of inertia of a ring about its center
 
 # measures the added-mass of the body, which is needed to update the acceleration in freefalling!
-function compute_paramaters!(N,H,θ₀,ρ;rings=16,R=2N/3,mem=CuArray,T=Float32)
+function compute_paramaters!(N,H,θ₀,ρ;rings=16,R=2N/3,U=1.f0,mem=CuArray,T=Float32)
     # longitudinal added mass
-    sim = kirigami(N;R,T,mem,H=H,fall=false,θ₀=0.0,dims=(3N,3N,3N÷2),dir=1)
+    sim = kirigami_half(N;R,T,mem,H=H,fall=false,θ₀=0.0,dims=(3N,3N,3N÷2),dir=1)
     sim_step!(sim;remeasure=false)
     m₁₁ = -2WaterLily.pressure_force(sim)[1]/(R+1/2+1/T(√2))^2
     # transverse added-mass
-    sim = kirigami(N;R,T,mem,H=H,fall=false,θ₀=0.0,dims=(3N,3N,3N÷2),dir=2)
+    sim = kirigami_half(N;R,T,mem,H=H,fall=false,θ₀=0.0,dims=(3N,3N,3N÷2),dir=2)
     sim_step!(sim;remeasure=false)
     m₂₂ = -2WaterLily.pressure_force(sim)[2]/(R+1/2+1/T(√2))^2
     # rotational added-mass
-    sim = kirigami(N;R,T,mem,H=H,fall=true,θ₀=0.f0,dims=(3N,3N,3N÷2))
+    sim = kirigami_half(N;R,T,mem,H=H,fall=true,θ₀=0.f0,dims=(3N,3N,3N÷2))
     # angular acceleration is not constant, so we just measure the moment at t=0 and
     # assume it is all due to added mass (not exact but should be close for small θ₀)
     α=1.0; ω=α*sim.flow.Δt[end]; θ=θ₀+ω*sim.flow.Δt[end];
@@ -101,10 +108,10 @@ end
 
 function freefalling!(sim,times,state,Xₘ;R=sim.L,g=state.g,X₀=zero(g),vel=zero(g),acc=zero(g),
                       θ=state.θ,ω=state.ω,α=state.α,m=state.m,Iₘ=state.Iₘ,Iₐ=state.Iₐ,
-                      mₐ=state.mₐ,save=false)
+                      mₐ=state.mₐ,save=false,name="kirigami_fall")
     vtk_motion(a::AbstractSimulation) = (a.flow.f .= 0; a.flow.f[:,:,:,1] .= X₀[1];
                                          a.flow.f[:,:,:,2] .= X₀[2]; a.flow.f |> Array)
-    save && (writer = vtkWriter("kirigami_N$(N)_H$(H)_fall"; attrib=Dict("u"=>vtk_u,"ω"=>vtk_ω,"λ₂"=>vtk_λ₂,"d"=>vtk_d,"motion"=>vtk_motion)))
+    save && (writer = vtkWriter(name; attrib=Dict("u"=>vtk_u,"ω"=>vtk_ω,"λ₂"=>vtk_λ₂,"d"=>vtk_d,"motion"=>vtk_motion)))
     data = NamedTuple[] # store data
     for t in times
         while sim_time(sim) < t
@@ -126,7 +133,7 @@ function freefalling!(sim,times,state,Xₘ;R=sim.L,g=state.g,X₀=zero(g),vel=ze
             measure!(sim)
             biot_mom_step_fall!(sim;udf=fall!,acceleration=-acc,U=-vel)
         end
-        maximum(abs, vel) > 10U && break # stop if it goes out of control, probably numerical instability at that point
+        maximum(abs, vel) > 10sim.U && break # stop if it goes out of control, probably numerical instability at that point
         save && save!(writer,sim)
         println("tU/L=",round(t,digits=4),", Δt=",round(sim.flow.Δt[end],digits=3),
                 " X₁=", round(X₀[1]/sim.L,digits=3), " θ=", round(rad2deg(θ),digits=3),
@@ -138,85 +145,4 @@ function freefalling!(sim,times,state,Xₘ;R=sim.L,g=state.g,X₀=zero(g),vel=ze
     end
     save && close(writer)
     return Table(data)
-end
-
-# make a writer with some attributes, need to output to CPU array to save file (|> Array)
-using WriteVTK
-import WaterLily: @loop,ω,λ₂
-vtk_ω(a::AbstractSimulation) = (@loop a.flow.f[I,:] .= ω(I,a.flow.u) over I in inside(a.flow.p); a.flow.f |> Array)
-vtk_d(a::AbstractSimulation) = (measure_sdf!(a.flow.σ,a.body,WaterLily.time(a)); a.flow.σ |> Array)
-vtk_λ₂(a::AbstractSimulation) = (@inside a.flow.σ[I] = λ₂(I,a.flow.u); a.flow.σ |> Array)
-vtk_u(a::AbstractSimulation) = a.flow.u |> Array
-
-# free falling
-N = 2^7; times = 0.2:0.05:20.0
-θ₀=0.4f0; H=0.25; ρ=10.f0; R=2N/3.f0; U=1.f0 # only values H ∈ [0,1]
-
-# single run, compute real added mass and added-inertial for the body
-params = compute_paramaters!(N,H,θ₀,ρ;R,mem=CuArray,T=Float32)
-sim = kirigami(N;mem=CuArray,H=H,fall=true,θ₀);
-Xₘ = sim.body.a.b.map.x₀ # moment point in lab frame
-writer = vtkWriter("kirigami_N$(N)_H$(H)_fall"; attrib=Dict("ω"=>vtk_ω,"λ₂"=>vtk_λ₂,"d"=>vtk_d,"motion"=>vtk_motion))
-data = freefalling!(sim,times,params,Xₘ;save=true)
-close(writer)
-
-# measure Ia and mₐ for different H, which we will need to update the acceleration in freefalling!
-ρ = 10.f0; N = 2^7; R=2N/3.f0
-params_all = []
-for H in (0.0,0.25,0.5,1.0,2.0,4.0)
-    # measure every time H changes
-    params = compute_paramaters!(N,H,0,ρ;R,mem=CuArray,T=Float32)
-    push!(params_all, params)
-end; save_object("kirigami_parameters.jld2",params_all)
-
-# H sweep at angle of attack
-using Plots,JLD2
-N = 2^7; θ₀=0.1f0; R=2N/3.f0; U=1.f0
-times = 0.01:0.01:30.0
-for H in (0.0,0.25,0.5,1.0,2.0,4.0)
-    @show H; flush(stdout)
-    sim = kirigami(N;mem=CuArray,H,fall=false,θ₀,dims=(6N,3N,3N÷2));
-    Xₘ = H==0 ? sim.body.map.x₀ : sim.body.a.b.map.x₀ # moment point in lab frame
-    data = drag!(sim,times,R,Xₘ) # run
-    save_object("kirigami_N$(N)_H$(H)_AoA_fall.jld2",data)
-    writer = vtkWriter("kirigami_N$(N)_H$(H)_AoA_fall"; attrib=Dict("ω"=>vtk_ω,"λ₂"=>vtk_λ₂,"d"=>vtk_d))
-    save!(writer,sim); close(writer)
-end
-
-# domain sweep
-θ₀ = 0.2f0; H = 1.f0
-params = compute_paramaters!(N,H,θ₀,ρ;R,mem=CuArray,T=Float32)
-for dims in ((6N,4N,3N),(8N,4N,3N))
-    @show dims, θ₀, H
-    sim = kirigami(N;mem=CuArray,H,fall=true,θ₀,dims=dims);
-    Xₘ = sim.body.a.b.map.x₀ # moment point in lab frame
-    measure_sdf!(sim.flow.σ,sim.body,WaterLily.time(sim))
-    flood(sim.flow.σ[2:end-1,2:end-1,2],clims=(-1,1))
-    savefig("kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_initial.png")
-    data = freefalling!(sim,times,params,Xₘ)
-    save_object("kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_fall.jld2",data)
-    flood(sim.flow.u[2:end-1,2:end-1,2,1])
-    scatter!([Xₘ[1]],[Xₘ[2]],markersize=5,color=:red,label=:none)
-    savefig("kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_final.png")
-end
-
-# theta and H sweep
-for H in (0.25,0.5,1.0,2.0,4.0)
-    # measure every time H changes
-    params = compute_paramaters!(N,H,θ₀,ρ;R,mem=CuArray,T=Float32)
-    for θ₀ in (0.f0,0.2f0,0.4f0)
-        @show θ₀,H
-        # set initial condition right
-        params = Base.setindex(params, θ₀, :θ)
-        sim = kirigami(N;mem=CuArray,H,fall=true,θ₀,dims=(6N,4N,3N÷2));
-        Xₘ = sim.body.a.b.map.x₀ # moment point in lab frame
-        measure_sdf!(sim.flow.σ,sim.body,WaterLily.time(sim))
-        flood(sim.flow.σ[2:end-1,2:end-1,2],clims=(-1,1))
-        savefig("kirigami_N$(N)_H$(H)_θ$(θ₀)_initial.png")
-        data = freefalling!(sim,times,params,Xₘ)
-        save_object("kirigami_N$(N)_H$(H)_θ$(θ₀)_fall.jld2",data)
-        flood(sim.flow.u[2:end-1,2:end-1,2,1])
-        scatter!([Xₘ[1]],[Xₘ[2]],markersize=5,color=:red,label=:none)
-        savefig("kirigami_N$(N)_H$(H)_θ$(θ₀)_final.png")
-    end
 end
