@@ -2,7 +2,7 @@
 
 Scripts to reproduce the results of the kirigami parachute paper (`paper/JFM_paper.tex`), simulated with [WaterLily.jl](https://github.com/WaterLily-jl/WaterLily.jl) and the Biot-Savart far-field boundary conditions of [BiotSavartBCs.jl](https://github.com/WaterLily-jl/BiotSavartBCs.jl).
 
-> **Work in progress.** The free-fall simulations (`scripts/free_fall.jl`) need a reactive far-field velocity that is not available in BiotSavartBCs v1 yet, so `figure_5` and `figure_6` cannot be regenerated at the moment.
+> **Work in progress.** The free-fall simulations (`scripts/free_fall.jl`) update the far-field velocity every step with `WaterLily.setproperties(sim.flow; uBC)`, which needs an unreleased WaterLily (the `flow-setproperties` branch). Until it is released, the environment uses a local WaterLily checkout at `../WaterLily.jl`.
 
 ## Layout
 
@@ -50,7 +50,7 @@ julia --project figures/figures.jl
 
 `figure_A2` also renders the sphere wake from the saved flow state (`sphere3_zoom.png`, embedded in `validation_sphere.png`) with WaterLily's Makie `viz!`, which needs a display for GLMakie. The remaining figures are hand-made: `flow_render_2.png` (Fig. 1) is a ParaView rendering of the λ₂ isosurfaces in the VTK output of `scripts/deployment_sweep.jl`, and `multilevel_domain.svg` (Fig. 2) is a schematic drawn in Inkscape.
 
-Simulations with purely axial motion (convergence, rings and deployment sweeps) use a quarter domain with symmetry planes in y and z (`src/quarter_domain.jl`). Simulations with motion in the x-y plane (added mass, angle of attack and free fall) use a half domain with a symmetry plane in z (`src/half_domain.jl`). Each overrides the Biot-Savart symmetry function, so only include one of the two in a Julia session.
+Simulations with purely axial motion (convergence, rings and deployment sweeps) use a quarter domain with symmetry planes in y and z (`src/quarter_domain.jl`). Simulations with motion in the x-y plane (added mass, angle of attack and free fall) use a half domain with a symmetry plane in z (`src/half_domain.jl`). Each overrides the Biot-Savart symmetry function, so only include one of the two in a Julia session. Both build the parachute from `src/kirigami.jl`. The free-fall added-mass calculation and dynamics are in `src/free_fall.jl`.
 
 ## License
 

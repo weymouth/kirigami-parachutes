@@ -17,6 +17,7 @@ WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [sources]
 BiotSavartBCs = {rev = "ce98bf21c7e03bd7ab63492230c49f87942cc745", url = "https://github.com/WaterLily-jl/BiotSavartBCs.jl"}
+WaterLily = {path = "../WaterLily.jl"}
 
 [compat]
 BiotSavartBCs = "1"

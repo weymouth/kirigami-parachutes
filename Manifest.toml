@@ -2060,7 +2060,7 @@ version = "1.3.243+0"
 
 [[deps.WaterLily]]
 deps = ["ConstructionBase", "DocStringExtensions", "EllipsisNotation", "ForwardDiff", "KernelAbstractions", "LinearAlgebra", "LoggingExtras", "Preferences", "Printf", "Reexport", "Requires", "StaticArrays", "TOML"]
-git-tree-sha1 = "87a3885e4c5095a61ff618d9f9f24b52d5adad54"
+path = "../WaterLily.jl"
 uuid = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 version = "1.9.0"
 
