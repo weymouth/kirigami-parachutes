@@ -161,7 +161,6 @@ function figure_4()
     m11 = getindex.(mA,1)
     m22 = getindex.(mA,2)
     Ia = getindex.(params_all,:Iₐ)./R^5
-    Im = getindex.(params_all,:Iₘ)./R^5
     # color scheme for the rings sweep, H=1
     colors = get(ColorSchemes.amp, range(0.0, 1.0, length=6))
     # figure  and axis
@@ -186,14 +185,12 @@ function figure_4()
             end
         end
     end
-    ρ = 10
     # added mass and added inertia
-    lines!(ax2,H,2m11,label="C₁₁",color=:olive)
-    lines!(ax2,H,2m22,label="C₂₂",color=:maroon)
+    lines!(ax2,H,m11,label="C₁₁",color=:olive)
+    lines!(ax2,H,m22,label="C₂₂",color=:maroon)
     scatter!(ax2,[0,0],[8/3,0],color=[:olive, :maroon])
-    lines!(ax2,H,2Ia,label="C₆₆",color=:teal)
+    lines!(ax2,H,Ia,label="C₆₆",color=:teal)
     scatter!(ax2,[0],[16π/45],color=:teal)
-    # lines!(ax2,H,Im,label="Iₘ",color=:black, linestyle=:dash)
 
     lines=[]; cm_mean=[]; cl_mean=[]; cd_mean=[]
     for H in (0.0,0.25,0.5,1.0,2.0,4.0)
@@ -208,10 +205,9 @@ function figure_4()
     Hs = [0.0,0.25,0.5,1.0,2.0,4.0]
 
     println("H:    ", Hs)
-    println("m*:   ", round.(2m_star.+2m22, digits=3))
-    println("C_11:   ", round.(2m11, digits=3))
-    println("C_26: ")
-    println("C_66: ", round.(2Ia, digits=3))
+    println("m*:   ", round.(m_star.+m22, digits=3))
+    println("C_11:   ", round.(m11, digits=3))
+    println("C_66: ", round.(Ia, digits=3))
     println("CL': ", round.((cl_mean./0.1), digits=3))
     println("Cm': ", round.((cm_mean./0.1), digits=3))
     println("Cd: ", round.(cd_mean, digits=3))

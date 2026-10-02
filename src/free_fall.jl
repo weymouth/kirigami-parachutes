@@ -1,21 +1,21 @@
 include("half_domain.jl")
 
-function compute_parameters(N,H,θ₀,ρ;rings=16,R=2N/3,U=1,mem=CuArray,T=Float32)
-    R,H,θ₀,ρ,U = T(R),T(H),T(θ₀),T(ρ),T(U)
+full_body(sim,x) = 2eltype(sim.flow.p).(x)
+
+function compute_parameters(N,H,θ₀;R=2N/3,U=1,mem=CuArray,T=Float32)
+    R,H,θ₀,U = T(R),T(H),T(θ₀),T(U)
     sim(;kw...) = kirigami_half(N;R,T,mem,H,dims=(3N,3N,3N÷2),kw...)
-    force(sim) = T.(WaterLily.pressure_force(sim))
-    added_mass(dir) = (s = sim(;dir); sim_step!(s;remeasure=false); -2force(s)[dir]/outer_radius(R)^2)
+    added_mass(dir) = (s = sim(;dir); sim_step!(s;remeasure=false);
+                       -2full_body(s,WaterLily.pressure_force(s))[dir]/outer_radius(R)^2)
     m₁₁,m₂₂ = added_mass(1),added_mass(2)
 
     s = sim(fall=true)
     α=one(T); ω=α*s.flow.Δt[end]; θ=θ₀+ω*s.flow.Δt[end]
     s.body = setmap(s.body;θ=SA{T}[0,0,θ],ω=SA{T}[0,0,ω])
     sim_step!(s;remeasure=true)
-    Iₐ = 2T.(WaterLily.pressure_moment(body_map(s.body).x₀,s))[3]
-    apply!(x->-x[1],s.flow.p)
-    m = -2force(s)[1]
+    Iₐ = 2full_body(s,WaterLily.pressure_moment(body_map(s.body).x₀,s))[3]
 
-    (m=ρ*m, g=SA{T}[-U^2/R,0,0], mₐ=SA{T}[m₁₁*R^3,m₂₂*R^3,0], Iₘ=ρ*body_inertia(R,H,rings,ρ)/2, Iₐ)
+    (m=T(1.5)*R^3, g=SA{T}[-U^2/R,0,0], mₐ=SA{T}[m₁₁*R^3,m₂₂*R^3,0], Iₐ)
 end
 
 struct Falling{V,A,T,P} <: Function
@@ -32,13 +32,13 @@ function WaterLily.measure!(sim::Simulation,t=sum(sim.flow.Δt))
     if sim.flow.uBC isa Falling
         fall = sim.flow.uBC
         T, Δt, map = eltype(sim.flow.p), sim.flow.Δt[end], body_map(sim.body)
-        (;m,mₐ,Iₘ,Iₐ,g,α,X₀) = fall.body
+        (;m,mₐ,Iₐ,g,α,X₀) = fall.body
         vel,acc,θ,ω = -fall.U,-fall.a,map.θ[3],map.ω[3]
-        force = rotate(-T.(WaterLily.total_force(sim))+m.*g,-θ)
-        moment = -T.(WaterLily.pressure_moment(map.x₀,sim))[3]
-        acc = rotate((force-mₐ.*rotate(acc,-θ))./(m.+mₐ),θ).*SA{T}[1,1,0]
+        force = rotate(-full_body(sim,WaterLily.total_force(sim))+m.*g,-θ)
+        moment = -full_body(sim,WaterLily.pressure_moment(map.x₀,sim))[3]
+        acc = rotate((force+mₐ.*rotate(acc,-θ))./(m.+mₐ),θ).*SA{T}[1,1,0]
         vel += Δt*acc; X₀ += Δt*vel
-        α = (moment-α*Iₐ)/(Iₘ+Iₐ); ω += Δt*α; θ += Δt*ω
+        α = (moment+α*Iₐ)/Iₐ; ω += Δt*α; θ += Δt*ω
         sim.body = setmap(sim.body;θ=SA{T}[0,0,θ],ω=SA{T}[0,0,ω])
         sim.flow = WaterLily.setproperties(sim.flow;uBC=Falling(-vel,-acc,t,(;fall.body...,α,X₀)))
     end

@@ -23,14 +23,6 @@ body_map(body::WaterLily.SetBody) = body_map(body.a)
 body_map(body::AutoBody) = body.map
 
 outer_radius(R) = R+typeof(R)(1/2)+1/typeof(R)(√2)
-thickness(T) = 1+2/T(√2)
-
-ring_mass(R₀,R₁,t,ρ) = 2ρ*π*t*(R₁-R₀)
-ring_inertia(R₀,R₁,t,ρ,x₀) = (m = ring_mass(R₀,R₁,t,ρ); m*(R₁^2+R₀^2)/4 + m*x₀^2)
-function body_inertia(R,H,rings,ρ)
-    δR,δH = ring_spacing(R,H,rings)
-    sum(i -> ring_inertia(δR*(i-1), δR*i, thickness(typeof(R)), ρ, δH*i^2-δH*(i-1)^2), 1:rings)
-end
 
 function coefficients(sim,scale,R,x₀)
     T = eltype(sim.flow.p)
