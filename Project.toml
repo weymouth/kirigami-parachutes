@@ -16,8 +16,7 @@ WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [sources]
-BiotSavartBCs = {rev = "ce98bf21c7e03bd7ab63492230c49f87942cc745", url = "https://github.com/WaterLily-jl/BiotSavartBCs.jl"}
-WaterLily = {rev = "f175d1d67415e09a7e33225b7d93964226058411", url = "https://github.com/WaterLily-jl/WaterLily.jl"}
+BiotSavartBCs = {rev = "2f845bfde5ed9c6a8ddfe9c9eaceb6a857270fb9", url = "https://github.com/WaterLily-jl/BiotSavartBCs.jl"}
 
 [compat]
 BiotSavartBCs = "1"
@@ -33,6 +32,6 @@ ReadVTK = "0.2"
 StaticArrays = "1.9"
 Statistics = "1.11"
 TypedTables = "1.4"
-WaterLily = "1.9"
+WaterLily = "1.9.1"
 WriteVTK = "1.22"
 julia = "1.11"
