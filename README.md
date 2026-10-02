@@ -45,6 +45,7 @@ julia --project figures/figures.jl
 | `scripts/added_mass.jl` | `kirigami_parameters.jld2` | `kirigami_Cd_time.png` (`figure_4`), free-fall runs |
 | `scripts/aoa_sweep.jl` | `kirigami_N128_H*_AoA_fall.jld2` | `kirigami_Cd_time.png` (`figure_4`) |
 | `scripts/free_fall.jl` | `kirigami_N128_*_fall.jld2` | `kirigami_domain_sweep.png` (`figure_5`), `kirigami_results.png` (`figure_6`) |
+| `scripts/free_fall_video.jl` | VTK fields (~500 GB) | supplementary videos only |
 | `scripts/sphere.jl` | `sphere_*.jld2`, `sphere_320x128x128_t53.jld2` (flow state) | `validation_sphere.png` (`figure_A2`) |
 | `scripts/impulsive_circle.jl` | `ImpCircle_results.jld2` | `ImpCircle_results.png` (`figure_A1`) |
 
