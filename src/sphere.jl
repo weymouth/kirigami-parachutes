@@ -1,4 +1,3 @@
-# Sphere validation case, shared by scripts/sphere.jl and figures/figures.jl
 include("common.jl")
 
 function make_sphere(domain; N=2^6, R=N÷3, U=1, Re=3700, T=Float32, mem = Array)

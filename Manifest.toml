@@ -2,7 +2,7 @@
 
 julia_version = "1.11.9"
 manifest_format = "2.0"
-project_hash = "07a739b9ce197921d76a86e6d981eb276675c177"
+project_hash = "8fecca2d4bf67a7a1a22bbd47f5589a5feaed025"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -133,8 +133,8 @@ version = "1.4.0"
 
 [[deps.BiotSavartBCs]]
 deps = ["Atomix", "KernelAbstractions", "StaticArrays", "WaterLily"]
-git-tree-sha1 = "03d25bc3da202799d09f568f9e5e7279d1935026"
-repo-rev = "ce98bf21c7e03bd7ab63492230c49f87942cc745"
+git-tree-sha1 = "de5e2db9b3c4da9005413a248335c8ce934ac78b"
+repo-rev = "2f845bfde5ed9c6a8ddfe9c9eaceb6a857270fb9"
 repo-url = "https://github.com/WaterLily-jl/BiotSavartBCs.jl"
 uuid = "ec5a6caf-bdf7-41d0-b8e1-5fafde84e19f"
 version = "1.0.0"
@@ -2060,9 +2060,9 @@ version = "1.3.243+0"
 
 [[deps.WaterLily]]
 deps = ["ConstructionBase", "DocStringExtensions", "EllipsisNotation", "ForwardDiff", "KernelAbstractions", "LinearAlgebra", "LoggingExtras", "Preferences", "Printf", "Reexport", "Requires", "StaticArrays", "TOML"]
-git-tree-sha1 = "87a3885e4c5095a61ff618d9f9f24b52d5adad54"
+git-tree-sha1 = "4f8f6ec1d80ecf51f09c08bbfd505444450f0771"
 uuid = "ed894a53-35f9-47f1-b17f-85db9237eebd"
-version = "1.9.0"
+version = "1.9.1"
 
     [deps.WaterLily.extensions]
     WaterLilyAMDGPUExt = "AMDGPU"
