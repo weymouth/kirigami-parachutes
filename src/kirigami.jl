@@ -24,6 +24,15 @@ body_map(body::AutoBody) = body.map
 
 outer_radius(R) = R+typeof(R)(1/2)+1/typeof(R)(√2)
 
+function canopy_moments(R,H,rings)
+    δR,δH = ring_spacing(R,H,rings)
+    sum(1:rings) do i
+        R₀,R₁,x = δR*(i-1),δR*i,δH*((i-1)^2+i^2)/2
+        (R₁^2-R₀^2)/R^2*SA[x,(R₁^2+R₀^2)/4+x^2]
+    end
+end
+pivot(map) = map.x₀+map.xₚ
+
 function coefficients(sim,scale,R,x₀)
     T = eltype(sim.flow.p)
     Cd,Cl = -scale*T.(WaterLily.total_force(sim))[1:2]/R^2
