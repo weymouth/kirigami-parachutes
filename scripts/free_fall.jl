@@ -13,7 +13,7 @@ let H = 1.f0, θ₀ = 0.2f0, times = 0.2:0.2:20.0
     for dims in ((6N,4N,3N),(8N,4N,3N))
         @show dims, θ₀, H
         sim = kirigami_half(N;mem=CuArray,H,fall=true,θ₀,dims=dims); drop!(sim,params)
-        Xₘ = body_map(sim.body).x₀ # moment point in lab frame
+        Xₘ = pivot(body_map(sim.body)) # moment point in lab frame
         measure_sdf!(sim.flow.σ,sim.body,WaterLily.time(sim))
         flood(sim.flow.σ[2:end-1,2:end-1,2],clims=(-1,1))
         savefig("kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_initial.png")
@@ -33,7 +33,7 @@ let times = 0.2:0.2:20.0
         for θ₀ in (0.f0,0.2f0,0.4f0)
             @show θ₀,H
             sim = kirigami_half(N;mem=CuArray,H,fall=true,θ₀,dims=(6N,4N,3N÷2)); drop!(sim,params)
-            Xₘ = body_map(sim.body).x₀ # moment point in lab frame
+            Xₘ = pivot(body_map(sim.body)) # moment point in lab frame
             measure_sdf!(sim.flow.σ,sim.body,WaterLily.time(sim))
             flood(sim.flow.σ[2:end-1,2:end-1,2],clims=(-1,1))
             savefig("kirigami_N$(N)_H$(H)_θ$(θ₀)_initial.png")

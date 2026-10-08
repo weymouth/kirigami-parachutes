@@ -1,5 +1,5 @@
-# Load-dependent mass split: canopy fraction f=1/(1+H/H₁) at fixed total mass, with the payload balancing the canopy so the centre of mass is at the nose.
-# Runs both perturbations for H=1/4,1/2,1,2,4 and the H=1, θ₀=0.2 domain sweep.
+# Load-dependent mass split: canopy fraction f=1/(1+H/H₁) at fixed total mass, with a point payload at the nose and rotation about the true centre of mass.
+# Runs both perturbations for H=1/4,1/2,1,2,4.
 # Output: data/load_dependent_check/kirigami_N128_*_fall.jld2, with a summary of the pitch in the log
 include(joinpath(@__DIR__,"..","src","free_fall.jl"))
 using JLD2
@@ -17,7 +17,4 @@ end
 
 for H in (0.25f0,0.5f0,1.f0,2.f0,4.f0), θ₀ in (0.2f0,0.4f0)
     run(H,θ₀,(6N,4N,3N÷2),"H$(H)_θ$(θ₀)")
-end
-for dims in ((6N,4N,3N),(8N,4N,3N))
-    run(1.f0,0.2f0,dims,"$(dims[1])x$(dims[2])x$(dims[3])")
 end
