@@ -31,7 +31,6 @@ function canopy_moments(R,H,rings)
         (R₁^2-R₀^2)/R^2*SA[x,(R₁^2+R₀^2)/4+x^2]
     end
 end
-pivot(map) = map.x₀+map.xₚ
 
 function coefficients(sim,scale,R,x₀)
     T = eltype(sim.flow.p)
