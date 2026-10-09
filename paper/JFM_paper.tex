@@ -30,7 +30,7 @@ Kirigami, the art of cutting flat sheets into deployable 3D structures, has rece
 In this paper, we use a novel Biot-Savart far-field boundary condition to perform prescribed acceleration and free-falling simulations in effectively infinite domains, tracking the descent of a parameterized kirigami parachute. The far-field velocity is reconstructed from the interior vorticity, resulting in less than 0.1\% variation in the predicted dynamics as the domain size is doubled.
 We first show the linear forces drop $2-5\times$ as the parachute is deployed due to increased permeability, whereas the moments increase due the counterbalancing effect of the increased lever-arm.
 Next, we find that the kirigami parachute achieves stable flight for deployment heights as small as half its radius, quickly damping out applied perturbations. 
-For smaller deployments, the parachute tumbles due to side-slip and rotational coupling, as in falling disks.
+For smaller deployments, the parachute flutters with high amplitude due to side-slip and rotational coupling, as in falling disks.
 These effectively unbounded simulations identify that deployments approximately equal to the radius offer high drag forces with strong dynamic stability, providing a simple design rule for deployable parachutes. 
 
 \end{abstract}
@@ -99,7 +99,7 @@ The kinematics of the free-falling kirigami parachute are obtained by solving th
         \bm{\tau}_\text{fluid}=\oint_{\partial\mathcal{B}}(\bm{x}-\bm{x}_c)\times\bm\sigma\text{ d}S
     \end{split}
 \end{equation}
-where $\bm{u}_\mathcal{B}$ and $\bm{\theta}_\mathcal{B}$ are the body velocity and rotation angle, while $m$, $\bm x_c$, and $I$ are the mass, center of mass, and rotational inertia of the kirigami parachute, and $g$ is gravitational acceleration.
+where $\bm{u}_\mathcal{B}$ and $\bm{\theta}_\mathcal{B}$ are the body velocity and rotation angle, while $m$, $\bm x_c$, and $I$ are the mass, center of mass, and rotational inertia of the kirigami parachute and its payload, and $g$ is gravitational acceleration.
 The fluid force and moment are given by integrals of the fluid traction
 \begin{equation}
     \bm\sigma = \left[-p\mathbb{I} + \rho \nu\left(\nabla\bm u + \nabla\bm u^T\right)\right]\cdot\bm{n}
@@ -174,7 +174,7 @@ Appendix~\ref{app:validation} validates the Biot-Savart far-field conditions, re
 The fundamental assumption of this approach is that the flow external to the domain is irrotational, but the results are remarkably invariant to domain size even when the vortical wake is truncated by the domain boundary. 
 We also find the new far-field conditions are extremely efficient.
 We use WaterLily.jl, an immersed-boundary flow solver based on the Boundary Data Immersion Method (BDIM) \citep{Maertens2015} that can execute any backend \citep{Weymouth2025WaterLily.jl:Bodies} for all simulations, and measure that only around 5\% of the simulation time is spent in the FM$\ell$M Biot-Savart update. The complete code and instructions to reproduce these results are available online
-\footnote{\url{https://github.com/weymouth/BiotSavartBCs.jl}}.
+\footnote{\url{https://github.com/weymouth/kirigami-parachutes}}.
 
 \section{Results}\label{sec:results}
 
@@ -211,7 +211,7 @@ Figure~\ref{fig:Cd} shows the added-mass coefficients as measured in the first t
 
 We next investigate the flow and dynamics of the kirigami parachute under free-fall.
 The kirigami parachute is initially at rest in a quiescent fluid, with an initial parachute angle $\theta_{0}$ relative to gravity.
-Once released, the parachute is accelerated downward following Eq.~\ref{eq:motion}. To mimic a parachute under load, we concentrate the mass $m=1.5\rho R^3$ at the nose and set $I \ll \rho R^5$, meaning the added fluid inertia dominates. Defining a nominal drop rate $U=\sqrt{gR}$ for nondimensionalization, the Reynolds number matches the prescribed tests above, as does the grid resolution and ring thickness.
+Once released, the parachute is accelerated downward following Eq.~\ref{eq:motion}. To mimic a parachute under load, the mass $m=1.5\rho R^3$ is split between a point payload $m_p$ at the nose and the canopy $m_c$ distributed uniformly over the rings. Treating the kirigami as a linear spring loaded by the payload gives $H = H_1 m_p/m_c$, so lightly loaded parachutes are weakly deployed. We set $H_1=1$, so a payload matching the canopy mass deploys the parachute to its radius. The center of mass $\bm x_c$ then lies $HR/2(1+H)$ behind the nose, and the rotational inertia $I$ ranges from $0.3\rho R^5$ to $1.4\rho R^5$ over $H\in 1/4\ldots 4$. Defining a nominal drop rate $U=\sqrt{gR}$ for nondimensionalization, the Reynolds number matches the prescribed tests above, as does the grid resolution and ring thickness.
 
 Fig.~\ref{fig:kirigami_domain} shows the dynamics for the perturbed kirigami parachute using $H=1$ and $N_r=16$, which match the strongly stable dynamics measured in the experiments of \cite{Lamoureux2025Kirigami-inspiredReconfiguration}. The results also confirm that the new Biot-Savart Boundary far-field conditions enable dynamic predictions with negligible domain size dependence.
 The resulting force and moment coefficients, scaled body velocities, and angle are all visually indistinguishable. Even the integrated trajectory deviates by less than $0.02R$ after dropping $20R$ as the domain area is reduced by nearly a factor of three.
@@ -224,7 +224,7 @@ The resulting force and moment coefficients, scaled body velocities, and angle a
 \end{figure}
 
 
-We next study the impact of deployment length on the falling dynamics of the kirigami parachute. Fig.~\ref{fig:results} summarizes the free-falling trajectories with deployment lengths $H\in 1/4 \ldots 4$ and starting angles $\theta_0 \in \{0.2, 0.4\}$rad to investigate their stability. As deployment increases, the terminal falling velocity also increases due to the reduced drag coefficient. While a reduced drop rate is beneficial for a parachute, stability is a critical constraint, and the low-deployment parachutes with $H<1/2$ demonstrate unstable growth of their initial perturbation. Since these parachutes rotate rapidly, we stop the simulations once tumbling starts, when the rotation angle, forces, and moment peak.
+We next study the impact of deployment length on the falling dynamics of the kirigami parachute. Fig.~\ref{fig:results} summarizes the free-falling trajectories with deployment lengths $H\in 1/4 \ldots 4$ and starting angles $\theta_0 \in \{0.2, 0.4\}$rad to investigate their stability. As deployment increases, the terminal falling velocity also increases due to the reduced drag coefficient. While a reduced drop rate is beneficial for a parachute, stability is a critical constraint, and the low-deployment parachutes with $H<1/2$ demonstrate unstable growth of their initial perturbation.
 
 \begin{figure}
     \centering
@@ -241,7 +241,7 @@ This instability is due to side-slip and pitch flutter. Scaling all velocities b
     + \tfrac 12C_M'\,(\theta-v_{\cal B}) = 0,
 \end{equation}
 %
-where $m^* = (m+m_{22})/\rho R^3$ and $I^* = (I+m_{66})/\rho R^5$ are the scaled effective linear and rotational inertia, $v_{\cal B}=u_{{\cal B},2}/U$ is the scaled horizontal velocity making $\theta-v_{\cal B}$ the flow angle relative to the parachute centerline, $C_\Omega$ is the rotational damping, and $C_L'$, $C_M'$ are the side-force and moment derivatives with respect to angle. We have neglected the cross-coupling added mass $m_{26}$ and any depth $d$ of the payload center below the parachute nose; both add static stability but don't clarify the observed flutter mechanism. 
+where $m^* = (m+m_{22})/\rho R^3$ and $I^* = (I+m_{66})/\rho R^5$ are the scaled effective linear and rotational inertia, $v_{\cal B}=u_{{\cal B},2}/U$ is the scaled horizontal velocity making $\theta-v_{\cal B}$ the flow angle relative to the parachute centerline, $C_\Omega$ is the rotational damping, and $C_L'$, $C_M'$ are the side-force and moment derivatives with respect to angle. We have neglected the cross-coupling added mass $m_{26}$ and the offset of $\bm x_c$ behind the nose; these modify the static stability but don't clarify the observed flutter mechanism. 
 
 Substituting perturbations of the form $v_{\cal B},\theta\sim e^{i\omega_n t}$ and combining the equations gives
 % \begin{gather*} # switch pi for 1 if needed
@@ -258,7 +258,7 @@ meaning the coupled side-slip and rotation will lead to a flutter instability wh
 \begin{equation}
     C_L'\,I^* > 2C_\Omega\, m^*. \label{eq:flutter}
 \end{equation}
-Equation~\ref{eq:flutter} identifies the destabilizing role of side-force generation and rotational added inertia, which are substantial for $H\le1/4$ but drop rapidly with $H$, Fig~\ref{fig:Cd}. In contrast, $m^*\approx m/\rho R^3$ for all $H$, and we expect $C_\Omega$ to quickly stabilize due to the moment-arm effect, similar to $C_M$, such that the balance changes quickly to favor stable falling. The log-decrement measurements of the effective damping jump from $\zeta(H=1/4)=-0.02$ to $\zeta(H=1/2)=0.02$, Figure~\ref{fig:results}. Further increasing the deployment, the parachute remains stable, but the damping coefficient gradually decreases due to the increased inertia for $H>1$.
+Equation~\ref{eq:flutter} identifies the destabilizing role of side-force generation and rotational inertia. The side-force is substantial for $H\le1/4$ but drops rapidly with $H$, Fig~\ref{fig:Cd}. In contrast, $m^*\approx m/\rho R^3$ for all $H$, and we expect $C_\Omega$ to quickly stabilize due to the moment-arm effect, similar to $C_M$, such that the balance changes quickly to favor stable falling. The log-decrement measurements of the effective damping jump from $\zeta(H=1/4)=-0.1$ to $\zeta(H=1/2)=0.03$ for $\theta_0=0.2$, Figure~\ref{fig:results}. Further increasing the deployment, the parachute remains stable, but the damping coefficient gradually decreases due to the increased inertia for $H>1$.
 
 % \begin{table}
 %     \centering
@@ -281,7 +281,7 @@ This work develops far-field boundary conditions for Eulerian simulations based 
 
 We use this approach to study the deployment-to-radius ratio $H$ as the governing parameter for kirigami parachute dynamics and identify the key physical competition at play; increasing $H$ strongly reduces the local stresses due to the increased permeability and wake disruption but also increases the vertical lever-arm between the stresses. This interplay rapidly shifts the side-slip rotation flutter dynamics from unstable to stable as the kirigami deploys, explaining the passively stable falling trajectories observed in \cite{Lamoureux2025Kirigami-inspiredReconfiguration}. 
 
-While the present results assume a prescribed deployment shape, neglecting reconfiguration dynamics, the identified stability mechanism depends only on the deployed geometry rather than the path to it. A deployment ratio of $H=\tfrac{1}{2}$ offers the highest deceleration at the stability boundary for this geometry and payload model, and the simple dynamic stability criterion developed provides a framework to study general statically stable falling systems.
+While the present results assume a prescribed deployment shape, neglecting reconfiguration dynamics, the identified stability mechanism depends only on the deployed geometry rather than the path to it. A deployment ratio of $H=\tfrac{1}{2}$ offers the highest deceleration at the stability boundary for this geometry and payload model. As the deployment is set by the payload, this boundary also provides a design rule: the parachute is stable for payloads $m_p \geq m_c/2H_1$, and the simple dynamic stability criterion developed provides a framework to study general statically stable falling systems.
 
 \bibliographystyle{jfm}
 \bibliography{references}
