@@ -2,11 +2,11 @@ include("half_domain.jl")
 
 full_body(sim,x) = 2eltype(sim.flow.p).(x)
 
-function compute_parameters(N,H,θ₀;R=2N/3,H₁=1,rings=16,U=1,mem=CuArray,T=Float32)
+function compute_parameters(N,H,θ₀;R=2N/3,H₁=1,rings=16,nose=false,U=1,mem=CuArray,T=Float32)
     R,H,θ₀,U,H₁ = T(R),T(H),T(θ₀),T(U),T(H₁)
     m, f = T(1.5)*R^3, 1/(1+H/H₁)
     x̄,i = canopy_moments(R,H,rings)
-    xₚ = SA{T}[f*x̄,0,0]
+    xₚ = SA{T}[nose ? 0 : f*x̄,0,0]
     I = f*m*i-m*xₚ[1]^2
     sim(;kw...) = kirigami_half(N;R,T,mem,H,rings,dims=(3N,3N,3N÷2),kw...)
     added_mass(dir) = (s = sim(;dir); sim_step!(s;remeasure=false);

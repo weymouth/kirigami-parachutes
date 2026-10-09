@@ -8,6 +8,6 @@ N = 2^7; R = 2N/3.f0
 params_all = []
 for H in (0.0,0.25,0.5,1.0,2.0,4.0)
     @show H; flush(stdout)
-    params = compute_parameters(N,H,0;R,mem=CuArray,T=Float32)
+    params = compute_parameters(N,H,0;R,nose=true,mem=CuArray,T=Float32)
     push!(params_all, params)
 end; save_object("kirigami_parameters.jld2",params_all)
