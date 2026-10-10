@@ -6,12 +6,12 @@ if length(ARGS) < 2
     N = isempty(ARGS) ? "128" : ARGS[1]
     for (name,rev) in ("master"=>"b6cf648414f5808e9ddc26675505bb07523e9ee9", "fused"=>"8a3322ef7f00e2df9db06ef94a612125baba3eb1")
         env = joinpath(datadir,"benchmark_$(name)_$(rev[1:7])")
-        if !isdir(env)
-            mkpath(env)
-            cp.(joinpath.(dirname(@__DIR__),("Project.toml","Manifest.toml")),joinpath.(env,("Project.toml","Manifest.toml")))
+        if !isfile(joinpath(env,"Manifest.toml"))
             Pkg.activate(env)
-            Pkg.add(url="https://github.com/WaterLily-jl/WaterLily.jl",rev=rev)
-            Pkg.add(url="https://github.com/weymouth/WaterLilyNarrowBand.jl")
+            Pkg.add([PackageSpec(url="https://github.com/WaterLily-jl/WaterLily.jl",rev=rev),
+                     PackageSpec(name="BiotSavartBCs",version="1"),
+                     PackageSpec(url="https://github.com/weymouth/WaterLilyNarrowBand.jl"),
+                     "CUDA","StaticArrays","TypedTables","WriteVTK"])
         end
         run(`$(Base.julia_cmd()) -t auto --project=$env $(@__FILE__) $N $name`)
     end

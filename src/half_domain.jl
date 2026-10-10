@@ -8,14 +8,7 @@ function kirigami_half(N;H=0,rings=16,U=1,a=1,Re=1e4,mem=Array,T=Float32,Ux=line
     H==1/4 && (x₀ += R)
     body = kirigami_body(RigidMap(SA{T}[x₀,dims[2]/2,0],SA{T}[0,0,θ₀]),R,H,rings,half_thk)
     Ut = fall ? (0,0,0) : (i,x,t)->(i==dir ? U*Ux(a*U*t/2R) : zero(t))
-    BiotSimulation(dims,Ut,R;U,ν=U*2R/Re,body,mem,T,ϵ,nonbiotfaces=(-3))
-end
-
-# overwrites BiotSavartBCs.symmetry: include only one of quarter_domain.jl and half_domain.jl
-import BiotSavartBCs: interaction,symmetry,image
-@inline function symmetry(ω,T,args...)
-    T₃,sgn₃ = image(T,size(ω),-3)
-    return interaction(ω,T,args...)+sgn₃*interaction(ω,T₃,args...)
+    BiotSimulation(dims,Ut,R;U,ν=U*2R/Re,body,mem,T,ϵ,symmetry=(-3,))
 end
 
 drag!(sim,times,R=sim.L,x₀=SA[R,0,0];remeasure=false) = history(sim,times,4,R,x₀;remeasure)
