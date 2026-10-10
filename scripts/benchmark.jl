@@ -26,20 +26,26 @@ body_map(b::NarrowBand) = body_map(b.body)
 force_moment(x,sim) = isdefined(WaterLily,:total_force_and_moment) ? WaterLily.total_force_and_moment(x,sim) :
                       (WaterLily.total_force(sim), WaterLily.pressure_moment(x,sim))
 timed(f) = (CUDA.synchronize(); @elapsed (f(); CUDA.synchronize()))
+println("$name on ",CUDA.name(CUDA.device()))
 
 for narrow in (false,true)
     sim = kirigami_half(N;mem=CuArray,H=1,θ₀=0.2f0,dims=(6N,4N,3N÷2))
     narrow && (sim.body = NarrowBand(sim.body,size(sim.flow.p).-2;interior=false,mem=CuArray))
-    θ, t = 0.2f0, zeros(3)
+    θ, t = 0.2f0, zeros(5)
     for n in 1:25
         x = pivot(body_map(sim.body))
         f = timed(()->force_moment(x,sim))
         θ += 0.005f0; sim.body = setmap(sim.body;θ=SA[0,0,θ])
-        m = timed(()->measure!(sim))
+        tᵢ = sum(sim.flow.Δt)
+        m = timed(()->measure!(sim.flow,sim.body;t=tᵢ,ϵ=sim.ϵ))
+        d = timed(()->measure_sdf!(sim.flow.σ,sim.body,tᵢ;fastd²=(2+sim.ϵ)^2)) # again, to time it alone
+        p = timed(()->WaterLily.update!(sim.pois))
         s = timed(()->sim_step!(sim;remeasure=false))
-        n > 5 && (t .+= (f,m,s)./20)
+        n > 5 && (t .+= (f,d,m,p,s)./20)
     end
-    @printf("%-6s %-10s forces %.4fs  measure! %.4fs  flow %.4fs  total %.4fs\n",
-            name,narrow ? "NarrowBand" : "SetBody",t...,sum(t))
+    f,d,m,p,s = t
+    @printf("%-6s %-10s forces %.4fs  measure_sdf! %.4fs  measure!(flow,body) %.4fs  update!(pois) %.4fs  flow %.4fs  total %.4fs",
+            name,narrow ? "NarrowBand" : "SetBody",f,d,m,p,s,f+m+p+s)
+    narrow ? @printf("  active cells %d of %d\n",count(sim.body.active),length(sim.body.active)) : println()
     sim = nothing; GC.gc(true); CUDA.reclaim()
 end
