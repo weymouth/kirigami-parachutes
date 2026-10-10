@@ -17,7 +17,7 @@ WaterLilyNarrowBand = "c192da82-d685-4e30-8b0b-b18c69bedd0a"
 WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [sources]
-WaterLily = {rev = "setbody-sdf", url = "https://github.com/WaterLily-jl/WaterLily.jl"}
+WaterLily = {rev = "master", url = "https://github.com/WaterLily-jl/WaterLily.jl"}
 WaterLilyNarrowBand = {url = "https://github.com/weymouth/WaterLilyNarrowBand.jl"}
 
 [compat]
