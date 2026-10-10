@@ -30,7 +30,6 @@ julia --project -t auto figures/figures.jl
 | `scripts/added_mass.jl` | `kirigami_parameters.jld2` | `figure_4`, free fall |
 | `scripts/aoa_sweep.jl` | `kirigami_N128_H*_AoA_fall.jld2` | `figure_4` |
 | `scripts/free_fall.jl` | `kirigami_N128_*_fall.jld2` | `figure_5`, `figure_6` |
-| `scripts/load_dependent_check.jl` | `load_dependent_check/kirigami_N128_*_fall.jld2` | load-dependent mass check |
 | `scripts/free_fall_video.jl` | VTK fields (~500 GB) | supplementary videos |
 | `scripts/sphere.jl` | `sphere_*.jld2` | `figure_A2` |
 | `scripts/impulsive_circle.jl` | `ImpCircle_results.jld2` | `figure_A1` |

@@ -13,20 +13,12 @@ function small_time(t;Re=550, k=4√(t/Re))
 end
 
 using Statistics
-function log_decrement(x::Vector{<:Real}; window=nothing)
-    n = length(x)
-    # Default window: ~1/16 of signal length
-    w = isnothing(window) ? max(1, round(Int, n / 16)) : window
-    # Compute rolling average (centred, with edge clamping)
-    rolling_mean = [mean(x[max(1, i-w):min(n, i+w)]) for i in 1:n]
-    x_centered = x .- rolling_mean
-    # Find local maxima in the centred signal
-    peaks = findall(i -> x_centered[i] > x_centered[i-1] && x_centered[i] > x_centered[i+1], 2:n-1) .+ 1
-    # Keep only positive peaks (above local mean)
-    peaks = filter(i -> x_centered[i] > 0, peaks)
-    length(peaks) < 2 && (println("Need at least 2 peaks above local mean to compute log decrement"); return x_centered,0)
-    decrements = [log(x_centered[peaks[i]] / x_centered[peaks[i+1]]) for i in 1:length(peaks)-1]
-    return x_centered, mean(decrements)
+# log decrement of a zero-mean signal from its first and last half-cycle extrema above tol
+function log_decrement(x; tol=1e-2)
+    a = abs.(x)
+    e = filter(i -> a[i] > a[i-1] && a[i] > a[i+1], 2:length(x)-1)
+    k = something(findfirst(i -> a[i] < tol, e), length(e)+1) - 1
+    k < 3 ? NaN : 2log(a[e[1]] / a[e[k]]) / (k - 1)
 end
 
 # these are relative to 1 CSS px
@@ -250,7 +242,7 @@ function figure_4()
     save(joinpath(figdir,"kirigami_Cd_time.png"), f, px_per_unit = 300/inch); f
 end
 
-function figure_5()
+function figure_5(file=joinpath(figdir,"kirigami_domain_sweep.png"))
     f = Figure(size=(16.4cm,5.4cm), figure_padding=6, fontsize=9pt)
     ax0 = Axis(f[1:2, 1], xlabel="Y/R", ylabel="X/R", xticks=([0.0,0.3,.6],["0","0.3","0.6"]))
     # ax_inset = Axis(f[1:2, 1],width=Relative(0.35),height=Relative(0.35),halign=0.3,valign=0.2)
@@ -261,7 +253,9 @@ function figure_5()
         if dims == (6N,4N,3N÷2)
             data = load_object(joinpath(datadir,"kirigami_N$(N)_H1.0_θ0.2_fall.jld2"))
         else
-            data = load_object(joinpath(datadir,"kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_fall.jld2"))
+            fname = joinpath(datadir,"kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_fall.jld2")
+            isfile(fname) || continue
+            data = load_object(fname)
         end
         x,y = integrate(data.u₁, data.u₂, data.t)
         lines!(ax0,y,x,alpha=0.5,linewidth=2.0,linestyle=style,color=:black)
@@ -290,14 +284,14 @@ function figure_5()
     Legend(f[1, 2:end], [l3, l2, l1], ["($(6N)x$(4N)x$(3N÷2))", "($(6N)x$(4N)x$(3N))", "($(8N)x$(4N)x$(3N))"],
            orientation=:horizontal, framevisible=false, patchlabelgap=2, patchsize=(26,0), padding=(10, 10, 10, 2))
     resize_to_layout!(f)
-    save(joinpath(figdir,"kirigami_domain_sweep.png"), f, px_per_unit=300/inch); f
+    save(file, f, px_per_unit=300/inch); f
 end
 
-function figure_6()
+function figure_6(file=joinpath(figdir,"kirigami_results.png"))
     f = Figure(size=(16.4cm,5.4cm), figure_padding=6, fontsize=9pt)
     ax0 = Axis(f[1:2, 1], xlabel="Y/R", ylabel="X/R")
     ax1 = Axis(f[2, 2], xlabel="Time (tU/R)", ylabel="Fall Velocity (u₁/U)")
-    ax2 = Axis(f[2, 3], xlabel="Deployment (H)", ylabel="ζ(u₁/U), ū₁/U",
+    ax2 = Axis(f[2, 3], xlabel="Deployment (H)", ylabel="ζ(θ),ū₁/U",
             xticks=([0.25,1,2,4],["0.25","1","2","4"]))
     l_H=[]; l_θ=[]
     # theta and H sweep
@@ -318,7 +312,7 @@ function figure_6()
             lines!(ax1,vcat(0,data.t),vcat(0,data.u₁),linewidth=min(H,3),color=color)
             H==4.0 && (l=lines!(ax1,[0],[0],linewidth=min(H,3),color=color))
             # log decreement
-            xc, δ = log_decrement(vcat(0,data.u₁); window=round(Int, length(data.u₁)/32))
+            δ = log_decrement(data.θ)
             push!(δ_final, δ)
             # scatter!(ax2, [H], [δ], color=color, markersize=8+12θ₀)
         end
@@ -334,11 +328,11 @@ function figure_6()
     xlims!(ax1,0,20); ylims!(ax1,-1.5,0.0)
     # xlims!(ax2,0,20); ylims!(ax2,-1,4)
     # xlims!(ax2,1e-1,1e1); ylims!(ax2,1e-3,1e2)
-    xlims!(ax2,0,4.1); ylims!(ax2,-1.5,0.6)
+    xlims!(ax2,0,4.1); ylims!(ax2,-1.5,1.5)
     for H in [0.25,0.5,1,2,4]
         l=lines!(ax1,[0],[0],linewidth=min(H,3),color=:black); push!(l_H,l)
     end
-    for (m,l) in zip([:circle, :rect], ["ū₁/U", "5ζ(u₁/U)"])
+    for (m,l) in zip([:circle, :rect], ["ū₁/U", "5ζ(θ)"])
         scatterlines!(ax2,[-10],[0],linewidth=2.0,color=:black,marker=m,label=l)
     end
     # @show l_H, l_θ
@@ -350,7 +344,7 @@ function figure_6()
     # Legend(f[1, 3], lines[8:end], , colgap=6,
             # orientation=:horizontal, framevisible=false, patchlabelgap=2, patchsize=(10,20))
     resize_to_layout!(f)
-    save(joinpath(figdir,"kirigami_results.png"), f, px_per_unit=300/inch); f
+    save(file, f, px_per_unit=300/inch); f
 end
 
 function figure_A1()

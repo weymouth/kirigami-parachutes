@@ -1,5 +1,5 @@
 # Time the kirigami measurement step on WaterLily master (b6cf648) and the bbox hook on the fused force PR (0f82fd7), with and without NarrowBand.
-# Usage: julia scripts/benchmark.jl [N]. Makes one environment per WaterLily version in data/.
+# Usage: julia -t auto scripts/benchmark.jl [N]. Makes one environment per WaterLily version in data/.
 if length(ARGS) < 2
     include(joinpath(@__DIR__,"..","src","paths.jl"))
     using Pkg
