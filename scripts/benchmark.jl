@@ -11,7 +11,7 @@ if length(ARGS) < 2
             Pkg.add([PackageSpec(url="https://github.com/WaterLily-jl/WaterLily.jl",rev=rev),
                      PackageSpec(name="BiotSavartBCs",version="1"),
                      PackageSpec(url="https://github.com/weymouth/WaterLilyNarrowBand.jl"),
-                     "CUDA","StaticArrays","TypedTables","WriteVTK"])
+                     PackageSpec.(["CUDA","StaticArrays","TypedTables","WriteVTK"])...])
         end
         run(`$(Base.julia_cmd()) -t auto --project=$env $(@__FILE__) $N $name`)
     end
