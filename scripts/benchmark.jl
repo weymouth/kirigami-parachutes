@@ -1,10 +1,10 @@
-# Time the kirigami measurement step on WaterLily master (b6cf648) and the fused force PR (8a3322e), with and without NarrowBand.
+# Time the kirigami measurement step on WaterLily master (b6cf648) and setbody-sdf (on the fused force PR), with and without NarrowBand.
 # Usage: julia scripts/benchmark.jl [N]. Makes one environment per WaterLily version in data/.
 if length(ARGS) < 2
     include(joinpath(@__DIR__,"..","src","paths.jl"))
     using Pkg
     N = isempty(ARGS) ? "128" : ARGS[1]
-    for (name,rev) in ("master"=>"b6cf648414f5808e9ddc26675505bb07523e9ee9", "fused"=>"8a3322ef7f00e2df9db06ef94a612125baba3eb1")
+    for (name,rev) in ("master"=>"b6cf648414f5808e9ddc26675505bb07523e9ee9", "sdf"=>"setbody-sdf")
         env = joinpath(datadir,"benchmark_$(name)_$(rev[1:7])")
         if !isfile(joinpath(env,"Manifest.toml"))
             Pkg.activate(env)
