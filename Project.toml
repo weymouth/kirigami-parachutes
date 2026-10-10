@@ -13,10 +13,12 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
+WaterLilyNarrowBand = "c192da82-d685-4e30-8b0b-b18c69bedd0a"
 WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [sources]
-BiotSavartBCs = {rev = "2f845bfde5ed9c6a8ddfe9c9eaceb6a857270fb9", url = "https://github.com/WaterLily-jl/BiotSavartBCs.jl"}
+WaterLily = {rev = "setbody-sdf", url = "https://github.com/WaterLily-jl/WaterLily.jl"}
+WaterLilyNarrowBand = {url = "https://github.com/weymouth/WaterLilyNarrowBand.jl"}
 
 [compat]
 BiotSavartBCs = "1"
@@ -33,5 +35,6 @@ StaticArrays = "1.9"
 Statistics = "1.11"
 TypedTables = "1.4"
 WaterLily = "1.9.1"
+WaterLilyNarrowBand = "0.1"
 WriteVTK = "1.22"
 julia = "1.11"

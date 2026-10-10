@@ -1,4 +1,4 @@
-using WaterLily,BiotSavartBCs,StaticArrays,TypedTables,WriteVTK
+using WaterLily,WaterLilyNarrowBand,BiotSavartBCs,StaticArrays,TypedTables,WriteVTK
 include("paths.jl")
 
 import WaterLily: @loop,ω,λ₂

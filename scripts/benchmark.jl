@@ -22,7 +22,6 @@ include(joinpath(@__DIR__,"..","src","half_domain.jl"))
 using WaterLilyNarrowBand, Printf
 N, name = parse(Int,ARGS[1]), ARGS[2]
 
-body_map(b::NarrowBand) = body_map(b.body)
 force_moment(x,sim) = isdefined(WaterLily,:total_force_and_moment) ? WaterLily.total_force_and_moment(x,sim) :
                       (WaterLily.total_force(sim), WaterLily.pressure_moment(x,sim))
 timed(f) = (CUDA.synchronize(); @elapsed (f(); CUDA.synchronize()))
