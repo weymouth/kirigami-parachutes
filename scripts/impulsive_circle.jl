@@ -63,7 +63,7 @@ end;
 end;
 
 # Vorticity field on the smallest domain at tU/D=4
-sim = circ(D,2*D);sim_step!(sim,4,remeasure=false);
+sim = circ(D,2*D,mem=CUDA.CuArray); sim_step!(sim,4,remeasure=false)
 ω = sim.flow.σ
 @inside ω[I] = WaterLily.curl(3,I,sim.flow.u)*sim.L/sim.U
 save_object("ImpCircle_results.jld2",Dict("biot"=>biot,"refl"=>refl,"Gillis"=>Gillis,
