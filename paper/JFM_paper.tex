@@ -260,22 +260,7 @@ meaning the coupled side-slip and rotation will lead to a flutter instability wh
 \begin{equation}
     C_L'\,I^* > 2C_\Omega\, m^*. \label{eq:flutter}
 \end{equation}
-Equation~\ref{eq:flutter} identifies the destabilizing role of side-force generation and rotational inertia. The side-force is substantial for $H\le1/4$ but drops rapidly with $H$, Fig~\ref{fig:Cd}. In contrast, $m^*\approx m/\rho R^3$ for all $H$, and we expect $C_\Omega$ to quickly stabilize due to the moment-arm effect, similar to $C_M$, such that the balance changes quickly to favor stable falling. The log-decrement measurements of the effective damping jump from $\zeta(H=1/4)=-0.07$ to $\zeta(H=1/2)=0.13$, Figure~\ref{fig:results}. Further increasing the deployment, the damping coefficient rises to $\zeta\approx0.27$ at $H=1$ and then plateaus, $\zeta\approx0.24$ for $H>1$.
-
-% \begin{table}
-%     \centering
-%     \begin{tabular}{l|ccccccc}
-%         $H$ & $m^*$ & $C_{11}$ & $C_{26}$ & $C_{66}$ & $C_L'$ & $C_m'$ & $C_D$ \\[3pt]
-%         0   & 0.886 & 2.64 & 0.001 & 0.804 & 4.894 & 1.508 & 4.77\\
-%         1/4 & 0.817 & 0.459 & -0.089 & 0.319 & 2.801 & 0.910 & 3.042\\
-%         1/2 & 0.827 & 0.301 & -0.059 & 0.195 & 2.249 & 1.085 & 2.499\\
-%         1   & 0.841 & 0.217 & -0.056 & 0.176 & 1.665 & 1.807 & 2.058\\
-%         2   & 0.839 & 0.179 & -0.098 & 0.273 & 1.455 & 2.653 & 1.945\\
-%         4   & 0.812 & 0.148 & -0.351 & 1.150 & 0.891 & 4.59 & 1.864\\
-%     \end{tabular}
-%     \caption{Mass, added-mass and force coefficients as a function of deployment $H$}
-%     \label{tab:placeholder}
-% \end{table}
+Equation~\ref{eq:flutter} identifies the destabilizing role of side-force generation and rotational inertia. The side-force is substantial for $H\le1/4$ but drops rapidly with $H$, Fig~\ref{fig:Cd}. In contrast, $m^*\approx m/\rho R^3$ for all $H$, and we expect $C_\Omega$ to quickly stabilize due to the moment-arm effect, similar to $C_M$, such that the balance changes quickly to favor stable falling. The log-decrement measurements of the effective damping jump from $\zeta(H=1/4)=-0.07$ to $\zeta(H=1/2)=0.13$, Figure~\ref{fig:results}. Further increasing the deployment, the damping coefficient rises above $\zeta=0.25$ at $H=1$ and plateaus for $H>1$.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -283,7 +268,7 @@ This work develops far-field boundary conditions for Eulerian simulations based 
 
 We use this approach to study the deployment-to-radius ratio $H$ as the governing parameter for kirigami parachute dynamics and identify the key physical competition at play; increasing $H$ strongly reduces the local stresses due to the increased permeability and wake disruption but also increases the vertical lever-arm between the stresses. This interplay rapidly shifts the side-slip rotation flutter dynamics from unstable to stable as the kirigami deploys, explaining the passively stable falling trajectories observed in \cite{Lamoureux2025Kirigami-inspiredReconfiguration}. 
 
-While the present results assume a prescribed deployment shape, neglecting reconfiguration dynamics, the identified stability mechanism depends only on the deployed geometry rather than the path to it. A deployment ratio of $H=\tfrac{1}{2}$ offers the highest deceleration at the stability boundary for this geometry and payload model. As the deployment is set by the payload, this boundary also provides a design rule: the parachute is stable for payloads $m_p \geq m_c/2H_1$, and the simple dynamic stability criterion developed provides a framework to study general statically stable falling systems.
+While the present results assume a prescribed deployment shape, neglecting reconfiguration dynamics, the identified stability mechanism depends only on the deployed geometry rather than the path to it. A deployment ratio of $H=\tfrac{1}{2}$ offers the highest deceleration at the stability boundary for this geometry and payload model, and the simple dynamic stability criterion developed provides a framework to study general statically stable falling systems.
 
 \bibliographystyle{jfm}
 \bibliography{references}
