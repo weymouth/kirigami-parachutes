@@ -164,7 +164,7 @@ We therefore develop a Fast Multi-level Method (FM$\ell$M) that exploits the Car
 \begin{figure}
     \centering
     \vspace{2mm}
-    \def\svgwidth{0.6\columnwidth}
+    \def\svgwidth{0.7\columnwidth}
     \input{fig/multilevel_domain.pdf_tex}
     \caption{Schematic of the computational domain $\Omega$, its boundary $\partial\Omega$, and the immersed body $\mathcal{B}$. The figure also shows the multilevel evaluation of the Biot-Savart integral for a boundary point $\bm x$ over the nested subdomains $\mathcal{D}^{(1)} \cup \mathcal{D}^{(2)} \cup \mathcal{D}^{(3)} \cup \mathcal{D}^{(4)}=\Omega $. The $l=2$ domain half-width is shown, ${S}^{(2)}$, together with a schematic of the coarsening of the grid between the domains and the multilevel pooling $\mathcal{P}^{(3)\to(4)}$.}
     \label{Fig_2}
@@ -176,7 +176,7 @@ We also find the new far-field conditions are extremely efficient.
 We use WaterLily.jl, an immersed-boundary flow solver based on the Boundary Data Immersion Method (BDIM) \citep{Maertens2015} that can execute any backend \citep{Weymouth2025WaterLily.jl:Bodies} for all simulations, and measure that only around 5\% of the simulation time is spent in the FM$\ell$M Biot-Savart update. The complete code and instructions to reproduce these results are available online
 \footnote{\url{https://github.com/weymouth/kirigami-parachutes}}.
 
-\section{Results}\label{sec:results}
+\section{Forces and moments due to prescribed downward motion}
 
 \begin{figure}
     \centering
@@ -208,6 +208,8 @@ A lower bound on the added mass coefficients, neglecting the interaction of the 
 where we have neglected the small $1/N_r^3$ contribution to $C_{66}$ but included the factor proportional to $m_{22}H^2$ from the parallel axis theorem for each ring.
 
 Figure~\ref{fig:Cd} shows the added-mass coefficients as measured in the first time step of the acceleration phase. As predicted by this simple model, the added mass decreases inversely with the number of rings and approaches the lower bound for large $H$. The measured added inertia $C_{66}$ demonstrates the same competition between permeability and lever-arm as $C_M'$, with a minima around $H=1$.
+
+\section{Free-fall dynamics and instability mechanism}
 
 We next investigate the flow and dynamics of the kirigami parachute under free-fall.
 The kirigami parachute is initially at rest in a quiescent fluid, with an initial parachute angle $\theta_{0}$ relative to gravity.
