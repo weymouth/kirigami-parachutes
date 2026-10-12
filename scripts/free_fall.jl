@@ -30,7 +30,7 @@ let times = 0.2:0.2:20.0
     for H in (0.25,0.5,1.0,2.0,4.0)
         # measure every time H changes (the added inertia is measured at θ₀=0.2)
         params = compute_parameters(N,H,0.2f0;R,mem=CuArray,T=Float32)
-        for θ₀ in (0.f0,0.2f0,0.4f0)
+        for θ₀ in (0.2f0,0.4f0)
             @show θ₀,H
             sim = kirigami_half(N;mem=CuArray,H,fall=true,θ₀,dims=(6N,4N,3N÷2)); drop!(sim,params)
             Xₘ = pivot(body_map(sim.body)) # moment point in lab frame

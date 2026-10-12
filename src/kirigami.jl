@@ -20,6 +20,7 @@ function kirigami_body(map,R,H,rings,half_thk)
 end
 
 body_map(body::WaterLily.SetBody) = body_map(body.a)
+body_map(body::NarrowBand) = body_map(body.body)
 body_map(body::AutoBody) = body.map
 
 outer_radius(R) = R+typeof(R)(1/2)+1/typeof(R)(√2)
