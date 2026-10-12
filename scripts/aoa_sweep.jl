@@ -9,8 +9,8 @@ N = 2^7; θ₀ = 0.1f0; R = 2N/3.f0
 times = 0.01:0.01:30.0
 for H in (0.0,0.25,0.5,1.0,2.0,4.0)
     @show H; flush(stdout)
-    sim = kirigami_half(N;mem=CuArray,H,fall=false,θ₀,dims=(6N,3N,3N÷2));
-    Xₘ = H==0 ? sim.body.map.x₀ : sim.body.a.b.map.x₀ # moment point in lab frame
+    sim = kirigami_half(N;mem=CuArray,H,θ₀,dims=(6N,3N,3N÷2))
+    Xₘ = body_map(sim.body).x₀ # moment point (nose) in lab frame
     data = drag!(sim,times,R,Xₘ) # run
     save_object("kirigami_N$(N)_H$(H)_AoA_fall.jld2",data)
     writer = vtkWriter("kirigami_N$(N)_H$(H)_AoA_fall"; attrib=Dict("ω"=>vtk_ω,"λ₂"=>vtk_λ₂,"d"=>vtk_d))

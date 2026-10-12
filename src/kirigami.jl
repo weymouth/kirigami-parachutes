@@ -35,9 +35,8 @@ end
 pivot(map) = map.x₀+map.xₚ
 
 function coefficients(sim,scale,R,x₀)
-    T = eltype(sim.flow.p)
-    Cd,Cl = -scale*T.(WaterLily.total_force(sim))[1:2]/R^2
-    Cm = scale*T.(WaterLily.pressure_moment(x₀,sim))[3]/R^3
+    Cd,Cl = -scale*WaterLily.total_force(sim)[1:2]/R^2
+    Cm = scale*WaterLily.pressure_moment(x₀,sim)[3]/R^3
     (;Cd,Cl,Cm)
 end
 

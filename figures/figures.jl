@@ -26,10 +26,8 @@ inch = 96
 pt = 4/3
 cm = inch / 2.54
 
-# domain sweep
-N = 2^7; times = 0.2:0.2:20.0
-ρ=10.f0; R=2N/3.f0; U=1.f0 # only values H ∈ [0,1]
-θ₀ = 0.2f0; H = 1.f0
+# free-fall runs (figure_5, figure_6)
+N = 2^7; θ₀ = 0.2f0; H = 1.f0
 
 function integrate(u,v,t)
     x = zeros(length(t)); y = zeros(length(t))
@@ -141,8 +139,6 @@ end
 
 
 function figure_4()
-    inch, pt = 96, 4/3
-    cm = inch / 2.54
     # added-mass and inertia data
     N = 2^8
     R=2*2^7/3.f0
@@ -158,7 +154,6 @@ function figure_4()
     # figure  and axis
     f = Figure(size=(16.4cm,5.4cm), figure_padding=6, fontsize=8pt)
     ax1 = Axis(f[1, 1], xlabel="Time (tU/R)", ylabel="Drag Coefficient")
-    # ax2 = Axis(f[1, 2], xlabel="Time (tU/R)", ylabel="Drag Coefficient")
     ax2 = Axis(f[1, 3], xlabel="Deployment (H)", ylabel="Added-mass Coefficient")
     ax21 = Axis(f[1, 4], xlabel="Deployment (H)", ylabel="Lift and Moment Slope")
     ax3 = Axis(f[1, 2], xlabel="Rings (Nᵣ)", ylabel="Added-mass Coefficient")
@@ -170,7 +165,6 @@ function figure_4()
     for (c,ms,H) in zip(cs[2:6],[:+,:circle,:rect,:diamond],(0.5,1,2,4))
         for (color,rings) = zip(colors[2:end], 4:4:20)
             data = load_object(joinpath(datadir,"kirigami_N$(N)_H$(H)_rings$(rings)_hist.jld2"))
-            # H==1 && lines!(ax2,data.t,data.Cd,label="Nᵣ=$rings",linewidth=2,color=color)
             if (π^2/4rings<data.Cd[1])
                 rings!=16 && scatter!(ax3, rings, data.Cd[1]; color=c, marker=ms, markersize=10)
                 rings==16 && scatter!(ax3, rings, data.Cd[1]; color=c, marker=ms, markersize=10, label="H=$(H)")
@@ -206,14 +200,12 @@ function figure_4()
 
     scatterlines!(ax21, Hs, (cl_mean./0.1), marker=:rect, label="Cₗ'")
     scatterlines!(ax21, Hs, (cm_mean./0.1), marker=:circle, label="Cₘ'")
-    # scatterlines!(ax21, Hs, cd_mean, marker=:diamond, label="Cd")
     Hi = 0:0.01:4.0; Nr=16
     lines!(ax2, Hi, π^2/16Nr .+ 0.065.*Hi.^2, color=:black, linestyle=:dot, linewidth=1)
 
     axislegend(ax21, position=:ct, rowgap=-6, patchlabelgap=2, patchsize=(16,20), padding=(10, 10, -2, -2))
     axislegend(ax2, position=:rt, rowgap=-6, patchlabelgap=2, patchsize=(16,20), padding=(10, 10, -2, -2))
     axislegend(ax3, position=:rt, rowgap=-6, patchlabelgap=2, patchsize=(16,20), padding=(10, 10, -2, -2))
-    # xlims!(ax2,0,3); ylims!(ax2,0,8);
     xlims!(ax3,1,32); ylims!(ax3,0,2)
     # load results for H sweep
     data = load_object(joinpath(datadir,"kirigami_N$(N)_H0.0_hist.jld2"))
@@ -230,22 +222,14 @@ function figure_4()
         lines!(ax1,data.t,data.Cd;linewidth=2,color=color,linestyle=:dash)
     end
     xlims!(ax1,0,3.0); ylims!(ax1,-1,11)
-    # colsize!(f.layout, 2, Auto(0.62))
-    # colsize!(f.layout, 3, Auto(0.62))
-    # colsize!(f.layout, 4, Auto(0.62))
     rowgap!(f.layout, 0)
     colgap!(f.layout, 10)
-    # axislegend(ax1, position=:lt, rowgap=-6, patchlabelgap=2, patchsize=(16,20), nbanks=2, padding=(10, 10, -2, -2))
-    # Label(f[1, 1, TopLeft()], "a", fontsize = 16, font = :bold, halign = :right)
-    # Label(f[1, 2, TopLeft()], "b", fontsize = 16, font = :bold, halign = :right)
-    # Label(f[1, 3, TopLeft()], "c", fontsize = 16, font = :bold, halign = :right)
     save(joinpath(figdir,"kirigami_Cd_time.png"), f, px_per_unit = 300/inch); f
 end
 
 function figure_5(file=joinpath(figdir,"kirigami_domain_sweep.png"))
     f = Figure(size=(16.4cm,5.4cm), figure_padding=6, fontsize=9pt)
     ax0 = Axis(f[1:2, 1], xlabel="Y/R", ylabel="X/R", xticks=([0.0,0.3,.6],["0","0.3","0.6"]))
-    # ax_inset = Axis(f[1:2, 1],width=Relative(0.35),height=Relative(0.35),halign=0.3,valign=0.2)
     ax1 = Axis(f[2, 2], xlabel="Time (tU/R)", ylabel="Coefficients")
     ax2 = Axis(f[2, 3], xlabel="Time (tU/R)", ylabel="Kinematics")
     for (dims, style) in zip(((6N,4N,3N÷2),(6N,4N,3N),(8N,4N,3N)), (:dot,:dash,:solid))
@@ -253,9 +237,7 @@ function figure_5(file=joinpath(figdir,"kirigami_domain_sweep.png"))
         if dims == (6N,4N,3N÷2)
             data = load_object(joinpath(datadir,"kirigami_N$(N)_H1.0_θ0.2_fall.jld2"))
         else
-            fname = joinpath(datadir,"kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_fall.jld2")
-            isfile(fname) || continue
-            data = load_object(fname)
+            data = load_object(joinpath(datadir,"kirigami_N$(N)_$(dims[1])x$(dims[2])x$(dims[3])_fall.jld2"))
         end
         x,y = integrate(data.u₁, data.u₂, data.t)
         lines!(ax0,y,x,alpha=0.5,linewidth=2.0,linestyle=style,color=:black)
@@ -307,14 +289,11 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
             H==4.0 && (l=lines!(ax1,[0],[0],linewidth=min(H,3),color=color); push!(l_θ,l))
             # final velocity extracted from the last 10% of the signal
             push!(v_final, mean(data.u₁[end-round(Int, length(data.u₁)/10):end]))
-            # v_final = sum(data.u₁[end-10:end])/10
-            # scatter!(ax2, [H], [v_final], marker=:rect, color=color, markersize=8+12θ₀)
             lines!(ax1,vcat(0,data.t),vcat(0,data.u₁),linewidth=min(H,3),color=color)
             H==4.0 && (l=lines!(ax1,[0],[0],linewidth=min(H,3),color=color))
             # log decreement
             δ = log_decrement(data.θ)
             push!(δ_final, δ)
-            # scatter!(ax2, [H], [δ], color=color, markersize=8+12θ₀)
         end
         scatterlines!(ax2, [0.25,0.5,1.0,2.0,4.0], v_final, color=color)
         scatterlines!(ax2, [0.25,0.5,1.0,2.0,4.0], 5δ_final./sqrt.(4π^2 .+ δ_final.^2), marker=:rect, color=color)
@@ -326,8 +305,6 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
     rowgap!(f.layout, 0)
     colgap!(f.layout, 10)
     xlims!(ax1,0,20); ylims!(ax1,-1.5,0.0)
-    # xlims!(ax2,0,20); ylims!(ax2,-1,4)
-    # xlims!(ax2,1e-1,1e1); ylims!(ax2,1e-3,1e2)
     xlims!(ax2,0,4.1); ylims!(ax2,-1.5,1.5)
     for H in [0.25,0.5,1,2,4]
         l=lines!(ax1,[0],[0],linewidth=min(H,3),color=:black); push!(l_H,l)
@@ -335,14 +312,11 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
     for (m,l) in zip([:circle, :rect], ["ū₁/U", "5ζ(θ)"])
         scatterlines!(ax2,[-10],[0],linewidth=2.0,color=:black,marker=m,label=l)
     end
-    # @show l_H, l_θ
     axislegend(ax2, position=:rc, orientation=:horizontal, rowgap=-6, patchlabelgap=2, patchsize=(16,20), padding=(10, 10, -2, -2))
     Legend(f[1, 3], reverse(l_θ), map(θ->"θ₀=$(θ)",[0.2,0.4]), colgap=6,
             orientation=:horizontal, framevisible=false, patchlabelgap=2, patchsize=(10,20))
     Legend(f[1, 2], l_H, map(H->"H=$(H)",[0.25,0.5,1,2,4]), colgap=6,
             orientation=:horizontal, framevisible=false, patchlabelgap=2, patchsize=(10,20))
-    # Legend(f[1, 3], lines[8:end], , colgap=6,
-            # orientation=:horizontal, framevisible=false, patchlabelgap=2, patchsize=(10,20))
     resize_to_layout!(f)
     save(file, f, px_per_unit=300/inch); f
 end
@@ -442,7 +416,6 @@ function figure_A2()
     axislegend(drag, position=:rt, labelsize=12, rowgap=0)
     Legend(f[1,1], lines, map(i->"=$(round(labs[i];digits=3))",1:3), "Blockage ratio πR²/A", labelsize=12, nbanks=3,
             framevisible=false, position=:rt, colgap=5, titlegap=0)
-    # hidespines!(ax.axis); hidedecorations!(ax.axis)
     colsize!(f.layout, 1, Relative(1/4))
     rowsize!(f.layout, 1, Auto(0.15))
     rowgap!(f.layout, 1, Relative(0.02))

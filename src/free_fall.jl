@@ -1,6 +1,6 @@
 include("half_domain.jl")
 
-full_body(sim,x) = 2eltype(sim.flow.p).(x)
+full_body(sim,x) = 2x
 
 function compute_parameters(N,H,θ₀;R=2N/3,H₁=1,rings=16,nose=false,U=1,mem=CuArray,T=Float32)
     R,H,θ₀,U,H₁ = T(R),T(H),T(θ₀),T(U),T(H₁)

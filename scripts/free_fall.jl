@@ -3,7 +3,6 @@
 include(joinpath(@__DIR__,"..","src","free_fall.jl"))
 using JLD2,Plots
 mkpath(datadir); cd(datadir)
-CUDA.device!(1)
 
 N = 2^7; R = 2N/3.f0
 

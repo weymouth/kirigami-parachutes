@@ -27,13 +27,12 @@ julia --project -t auto figures/figures.jl
 | `scripts/convergence.jl` | `kirigami_N*_H1_rings8_hist.jld2`, VTK fields | `figure_3` |
 | `scripts/rings_sweep.jl` | `kirigami_N256_H*_rings*_hist.jld2` | `figure_4` |
 | `scripts/deployment_sweep.jl` | `kirigami_N256_H*_hist.jld2` | `figure_4` |
-| `scripts/added_mass.jl` | `kirigami_parameters.jld2` | `figure_4`, free fall |
+| `scripts/added_mass.jl` | `kirigami_parameters.jld2` | `figure_4` |
 | `scripts/aoa_sweep.jl` | `kirigami_N128_H*_AoA_fall.jld2` | `figure_4` |
 | `scripts/free_fall.jl` | `kirigami_N128_*_fall.jld2` | `figure_5`, `figure_6` |
 | `scripts/free_fall_video.jl` | VTK fields (~500 GB) | supplementary videos |
 | `scripts/sphere.jl` | `sphere_*.jld2` | `figure_A2` |
 | `scripts/impulsive_circle.jl` | `ImpCircle_results.jld2` | `figure_A1` |
-| `scripts/benchmark.jl`, `scripts/narrowband_timing.jl` | log only | performance checks |
 
 Fig. 1 is a ParaView rendering of the `deployment_sweep.jl` VTK output and Fig. 2 an Inkscape schematic. `figure_A2` uses GLMakie and needs a display.
 

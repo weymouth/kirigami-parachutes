@@ -1,5 +1,5 @@
 # Linear and rotational added mass of the 16-ring parachute for a range of deployment ratios H.
-# Output: kirigami_parameters.jld2, used by figure_4 in figures/figures.jl and by the free-fall runs
+# Output: kirigami_parameters.jld2, used by figure_4 in figures/figures.jl
 include(joinpath(@__DIR__,"..","src","free_fall.jl"))
 using JLD2
 mkpath(datadir); cd(datadir)
