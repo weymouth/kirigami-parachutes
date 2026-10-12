@@ -275,6 +275,7 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
     ax1 = Axis(f[2, 2], xlabel="Time (tU/R)", ylabel="Fall Velocity (u₁/U)")
     ax2 = Axis(f[2, 3], xlabel="Deployment (H)", ylabel="ζ(θ),ū₁/U",
             xticks=([0.25,1,2,4],["0.25","1","2","4"]))
+    hlines!(ax2,[0],color=:gray,linewidth=1) # ζ<0 is unstable
     l_H=[]; l_θ=[]
     # theta and H sweep
     for θ₀ in (0.4f0,0.2f0)
@@ -296,7 +297,9 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
             push!(δ_final, δ)
         end
         scatterlines!(ax2, [0.25,0.5,1.0,2.0,4.0], v_final, color=color)
-        scatterlines!(ax2, [0.25,0.5,1.0,2.0,4.0], 5δ_final./sqrt.(4π^2 .+ δ_final.^2), marker=:rect, color=color)
+        ζ = δ_final./sqrt.(4π^2 .+ δ_final.^2); Hs = [0.25,0.5,1.0,2.0,4.0]
+        scatterlines!(ax2, Hs, ζ, marker=:rect, color=color)
+        scatter!(ax2, Hs[ζ.<0], ζ[ζ.<0], marker=:rect, color=:white, strokecolor=color, strokewidth=1.5) # unstable: open
     end
     lines!(ax1,[0],[0],label="u₁",linewidth=2.0,linestyle=:solid,color=:black)
     lines!(ax1,[0],[0],label="u₂",linewidth=2.0,linestyle=:dash,color=:black)
@@ -305,11 +308,11 @@ function figure_6(file=joinpath(figdir,"kirigami_results.png"))
     rowgap!(f.layout, 0)
     colgap!(f.layout, 10)
     xlims!(ax1,0,20); ylims!(ax1,-1.5,0.0)
-    xlims!(ax2,0,4.1); ylims!(ax2,-1.5,1.5)
+    xlims!(ax2,0,4.1); ylims!(ax2,-1.5,0.5)
     for H in [0.25,0.5,1,2,4]
         l=lines!(ax1,[0],[0],linewidth=min(H,3),color=:black); push!(l_H,l)
     end
-    for (m,l) in zip([:circle, :rect], ["ū₁/U", "5ζ(θ)"])
+    for (m,l) in zip([:circle, :rect], ["ū₁/U", "ζ(θ)"])
         scatterlines!(ax2,[-10],[0],linewidth=2.0,color=:black,marker=m,label=l)
     end
     axislegend(ax2, position=:rc, orientation=:horizontal, rowgap=-6, patchlabelgap=2, patchsize=(16,20), padding=(10, 10, -2, -2))
