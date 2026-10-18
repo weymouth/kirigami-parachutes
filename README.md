@@ -1,8 +1,6 @@
 # Kirigami parachutes
 
-Scripts for the kirigami parachute paper (`paper/JFM_paper.tex`), using [WaterLily.jl](https://github.com/WaterLily-jl/WaterLily.jl), [BiotSavartBCs.jl](https://github.com/WaterLily-jl/BiotSavartBCs.jl) and [WaterLilyNarrowBand.jl](https://github.com/weymouth/WaterLilyNarrowBand.jl).
-
-> **Still being finalized.** WaterLily and WaterLilyNarrowBand come from GitHub until their next releases (`[sources]` in `Project.toml`).
+Scripts for the kirigami parachute paper (`paper/JFM_paper.tex`), using [WaterLily.jl](https://github.com/WaterLily-jl/WaterLily.jl), [BiotSavartBCs.jl](https://github.com/WaterLily-jl/BiotSavartBCs.jl) and [WaterLilyNarrowBand.jl](https://github.com/WaterLily-jl/WaterLilyNarrowBand.jl).
 
 ## Setup
 
